@@ -4,6 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>다이렉트결혼준비 웨딩박람회 | Direct Wedding Convention</title>
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+  document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1937099100329037');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1937099100329037&ev=PageView&noscript=1"/></noscript>
+  <!-- End Meta Pixel Code -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -1075,14 +1088,40 @@
     btn.style.cursor  = ok ? 'pointer' : 'not-allowed';
   }
 
+  var SHEET_URL = 'YOUR_APPS_SCRIPT_URL'; // Apps Script 배포 후 교체
+
   function submitForm() {
     var name  = (document.getElementById('regName')  || {value:''}).value;
     var phone = (document.getElementById('regPhone') || {value:''}).value;
     var priv  = document.getElementById('privacyAgree') && document.getElementById('privacyAgree').checked;
+    var mkt   = document.getElementById('marketingAgree') && document.getElementById('marketingAgree').checked;
     if (!name.trim() || !phone.trim() || !_weddingVal || !_visitVal || !priv) {
       alert('필수 항목을 모두 입력해주세요.'); return;
     }
-    alert('신청이 완료되었습니다!\n이름: ' + name + '\n연락처: ' + phone + '\n결혼 예정일: ' + _weddingVal + '\n방문 희망일: ' + _visitVal);
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '신청 중...';
+    fetch(SHEET_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: new URLSearchParams({
+        name: name,
+        phone: phone,
+        weddingDate: _weddingVal,
+        visitDate: _visitVal,
+        marketing: mkt ? '동의' : '미동의'
+      })
+    }).then(function() {
+      btn.textContent = '신청 완료 ✓';
+      document.getElementById('regName').value = '';
+      document.getElementById('regPhone').value = '';
+      fbq('track', 'Lead');
+      alert('신청이 완료되었습니다!\n담당자가 곧 연락드리겠습니다.');
+    }).catch(function() {
+      btn.disabled = false;
+      btn.textContent = '박람회 신청하기';
+      alert('오류가 발생했습니다. 다시 시도해주세요.');
+    });
   }
 
   // 피커 외부 클릭 시 닫기
